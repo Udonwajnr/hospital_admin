@@ -1,9 +1,11 @@
-"use client"
-import React, { useState } from 'react';
+"use client";
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Container from '../components/Container'; // Adjust the import according to your project structure
 
 const HospitalForm = () => {
+  const [latitude, setLatitude] = useState("");
+  const [longitude, setLongitude] = useState("");
   const [hospital, setHospital] = useState({
     name: '',
     description: '',
@@ -21,19 +23,33 @@ const HospitalForm = () => {
     }
   });
 
-  console.log(hospital)
+  useEffect(() => {
+    // Update location coordinates when latitude or longitude changes
+    setHospital(prevState => ({
+      ...prevState,
+      location: {
+        ...prevState.location,
+        coordinates: [
+          parseFloat(latitude) || 0,
+          parseFloat(longitude) || 0
+        ]
+      }
+    }));
+  }, [latitude, longitude]);
 
-  // Handler for form input change
   const handleChange = (e) => {
     const { name, value } = e.target;
-    const [mainKey, subKey] = name.split('.');
-    
-    if (subKey) {
+
+    if (name.startsWith('contact.address')) {
+      const addressKey = name.split('.').pop();
       setHospital(prevState => ({
         ...prevState,
-        [mainKey]: {
-          ...prevState[mainKey],
-          [subKey]: value
+        contact: {
+          ...prevState.contact,
+          address: {
+            ...prevState.contact.address,
+            [addressKey]: value
+          }
         }
       }));
     } else {
@@ -42,20 +58,6 @@ const HospitalForm = () => {
         [name]: value
       }));
     }
-  };
-
-  const handleCoordinateChange = (e) => {
-    const { name, value } = e.target;
-    setHospital(prevState => ({
-      ...prevState,
-      location: {
-        ...prevState.location,
-        coordinates: {
-          ...prevState.location.coordinates,
-          [name]: value
-        }
-      }
-    }));
   };
 
   const handleOperatingHoursChange = (day, field, value) => {
@@ -72,9 +74,12 @@ const HospitalForm = () => {
   };
 
   const addHospital = async () => {
-    await axios.post('http://localhost:5000/hospitals', hospital)
-      .then(response => console.log(response.data))
-      .catch(error => console.error(error));
+    try {
+      const response = await axios.post('https://hospitalgisapi.onrender.com/api/hospital', hospital);
+      console.log(response.data);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
@@ -83,6 +88,7 @@ const HospitalForm = () => {
         <div className="w-full max-w-3xl bg-white shadow-lg rounded-lg p-8">
           <h1 className="text-3xl font-semibold text-gray-800 mb-6">Add Hospital Information</h1>
           <form className="space-y-6">
+            {/* Hospital Name */}
             <div className="flex flex-col space-y-2">
               <label className="text-gray-700 font-medium">Name of Hospital</label>
               <input
@@ -95,28 +101,28 @@ const HospitalForm = () => {
               />
             </div>
 
+            {/* Coordinates */}
             <div className="space-y-2">
               <label className="text-gray-700 font-medium">Coordinates</label>
               <div className="flex space-x-4">
                 <input
                   className="flex-1 border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  name={0}
                   type="number"
-                  value={hospital.location.coordinates[0]}
-                  onChange={handleCoordinateChange}
+                  value={latitude}
+                  onChange={(e) => setLatitude(e.target.value)}
                   placeholder="Latitude"
                 />
                 <input
                   className="flex-1 border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  name={1}
                   type="number"
-                  value={hospital.location.coordinates[1]}
-                  onChange={handleCoordinateChange}
+                  value={longitude}
+                  onChange={(e) => setLongitude(e.target.value)}
                   placeholder="Longitude"
                 />
               </div>
             </div>
 
+            {/* Contacts */}
             <div className="space-y-2">
               <label className="text-gray-700 font-medium">Contacts</label>
               <div className="flex space-x-4">
@@ -145,6 +151,7 @@ const HospitalForm = () => {
               </div>
             </div>
 
+            {/* Address */}
             <div className="space-y-2">
               <label className="text-gray-700 font-medium">Address</label>
               <div className="flex space-x-4 flex-wrap">
@@ -195,6 +202,7 @@ const HospitalForm = () => {
               </div>
             </div>
 
+            {/* Services */}
             <div className="space-y-2">
               <div className="flex justify-between">
                 <label className="text-gray-700 font-medium">Services</label>
@@ -204,12 +212,16 @@ const HospitalForm = () => {
                 className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 name="services"
                 value={hospital.services.join(', ')}
-                onChange={e => setHospital(prevState => ({ ...prevState, services: e.target.value.split(',').map(service => service.trim()) }))}
+                onChange={e => setHospital(prevState => ({
+                  ...prevState,
+                  services: e.target.value.split(',').map(service => service.trim())
+                }))}
                 type="text"
                 placeholder="Enter services offered (comma-separated)"
               />
             </div>
 
+            {/* Description */}
             <div className="space-y-2">
               <label className="text-gray-700 font-medium">Hospital Description</label>
               <textarea
@@ -222,6 +234,7 @@ const HospitalForm = () => {
               />
             </div>
 
+            {/* Operating Hours */}
             <div className="space-y-4">
               <label className="text-gray-700 font-medium">Operating Hours</label>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
