@@ -2,8 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Container from '../components/Container'; // Adjust the import according to your project structure
+import { useRouter } from 'next/navigation';
 
 const HospitalForm = () => {
+  const router = useRouter()
   const [latitude, setLatitude] = useState("");
   const [longitude, setLongitude] = useState("");
   const [hospital, setHospital] = useState({
@@ -22,9 +24,9 @@ const HospitalForm = () => {
       sunday: { open: '', close: '' }
     }
   });
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Update location coordinates when latitude or longitude changes
     setHospital(prevState => ({
       ...prevState,
       location: {
@@ -39,7 +41,8 @@ const HospitalForm = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
+  
+    // Handle nested fields for contact.address
     if (name.startsWith('contact.address')) {
       const addressKey = name.split('.').pop();
       setHospital(prevState => ({
@@ -52,13 +55,25 @@ const HospitalForm = () => {
           }
         }
       }));
+    } else if (name.startsWith('contact.')) {
+      // Handle contact fields like phone and email
+      const contactKey = name.split('.').pop();
+      setHospital(prevState => ({
+        ...prevState,
+        contact: {
+          ...prevState.contact,
+          [contactKey]: value
+        }
+      }));
     } else {
+      // Handle other fields
       setHospital(prevState => ({
         ...prevState,
         [name]: value
       }));
     }
   };
+  
 
   const handleOperatingHoursChange = (day, field, value) => {
     setHospital(prevState => ({
@@ -74,11 +89,19 @@ const HospitalForm = () => {
   };
 
   const addHospital = async () => {
+    // Basic validation
+    if (!hospital.name || !hospital.location.coordinates[0] || !hospital.location.coordinates[1]) {
+      setError("Please provide all required fields.");
+      return;
+    }
     try {
       const response = await axios.post('https://hospitalgisapi.onrender.com/api/hospital', hospital);
       console.log(response.data);
+      setError(null); // Clear error if successful
+      router.push('/')
     } catch (error) {
       console.error(error);
+      setError("An error occurred while submitting the form. Please try again.");
     }
   };
 
@@ -87,6 +110,10 @@ const HospitalForm = () => {
       <div className="flex justify-center items-center min-h-screen bg-gray-100 p-6">
         <div className="w-full max-w-3xl bg-white shadow-lg rounded-lg p-8">
           <h1 className="text-3xl font-semibold text-gray-800 mb-6">Add Hospital Information</h1>
+          {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <strong className="font-bold">Error!</strong>
+            <span className="block sm:inline">{error}</span>
+          </div>}
           <form className="space-y-6">
             {/* Hospital Name */}
             <div className="flex flex-col space-y-2">
@@ -123,6 +150,7 @@ const HospitalForm = () => {
             </div>
 
             {/* Contacts */}
+                {/* Contacts */}
             <div className="space-y-2">
               <label className="text-gray-700 font-medium">Contacts</label>
               <div className="flex space-x-4">
@@ -130,7 +158,7 @@ const HospitalForm = () => {
                   <label className="text-gray-700">Phone Number</label>
                   <input
                     className="border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    name="contact.phone"
+                    name="contact.phone"  // Ensure this matches the expected key
                     value={hospital.contact.phone}
                     onChange={handleChange}
                     type="text"
@@ -141,7 +169,7 @@ const HospitalForm = () => {
                   <label className="text-gray-700">Email</label>
                   <input
                     className="border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    name="contact.email"
+                    name="contact.email"  // Ensure this matches the expected key
                     type="email"
                     value={hospital.contact.email}
                     onChange={handleChange}
@@ -150,6 +178,7 @@ const HospitalForm = () => {
                 </div>
               </div>
             </div>
+
 
             {/* Address */}
             <div className="space-y-2">
@@ -206,7 +235,13 @@ const HospitalForm = () => {
             <div className="space-y-2">
               <div className="flex justify-between">
                 <label className="text-gray-700 font-medium">Services</label>
-                <button type="button" className="py-1 rounded-xl text-white bg-blue-500 text-center px-3">Add More Services +</button>
+                <button
+                  type="button"
+                  className="py-1 rounded-xl text-white bg-blue-500 text-center px-3"
+                  // Implement functionality to add more services if needed
+                >
+                  Add More Services +
+                </button>
               </div>
               <input
                 className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
