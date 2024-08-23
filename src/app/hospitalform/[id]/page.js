@@ -16,7 +16,21 @@ export default function EditForm() {
       axios
         .get(`https://hospitalgisapi.onrender.com/api/hospital/${id}`)
         .then((response) => {
-          setHospital(response.data);
+          const hospitalData = response.data;
+          console.log(hospitalData.operatingHours["monday"].close)
+          // Initialize operatingHours if it doesn't exist
+          if (!hospitalData.operatingHours) {
+            hospitalData.operatingHours = {
+              monday: { open: '', close: '' },
+              tuesday: { open: '', close: '' },
+              wednesday: { open: '', close: '' },
+              thursday: { open: '', close: '' },
+              friday: { open: '', close: '' },
+              saturday: { open: '', close: '' },
+              sunday: { open: '', close: '' },
+            };
+          }
+          setHospital(hospitalData);
           setLoading(false);
         })
         .catch((error) => {
@@ -25,7 +39,7 @@ export default function EditForm() {
         });
     }
   }, [id]);
-
+  console.log(hospital)
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
@@ -58,7 +72,7 @@ export default function EditForm() {
 
             <div className="space-y-2">
               <label className="text-gray-700 font-medium">Coordinates</label>
-              <div className="flex space-x-4">
+              <div className="flex space-x-4 flex-wrap">
                 <input
                   className="flex-1 border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   type="number"
@@ -78,7 +92,7 @@ export default function EditForm() {
 
             <div className="space-y-2">
               <label className="text-gray-700 font-medium">Contacts</label>
-              <div className="flex space-x-4">
+              <div className="flex space-x-4 flex-wrap">
                 <div className="flex-1 flex flex-col space-y-1">
                   <label className="text-gray-700">Phone Number</label>
                   <input
@@ -173,7 +187,8 @@ export default function EditForm() {
             <div className="space-y-4">
               <label className="text-gray-700 font-medium">Operating Hours</label>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
+                {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((day) =>{ return(
+                  
                   <div key={day} className="flex flex-col space-y-1">
                     <label className="text-gray-700">{day}</label>
                     <div className="flex flex-col space-y-2 md:flex-row md:space-y-0 md:space-x-2">
@@ -181,25 +196,37 @@ export default function EditForm() {
                         className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         type="text"
                         placeholder="Opening"
-                        value={hospital?.operatingHours[day]?.opening || ''}
+                        value={hospital?.operatingHours[day]?.open || ''}
                         onChange={(e) => setHospital({
                           ...hospital,
-                          operatingHours: { ...hospital.operatingHours, [day]: { ...hospital.operatingHours[day], opening: e.target.value } }
+                          operatingHours: { 
+                            ...hospital.operatingHours, 
+                            [day]: { 
+                              ...hospital.operatingHours[day], 
+                              open: e.target.value 
+                            } 
+                          }
                         })}
                       />
                       <input
                         className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         type="text"
                         placeholder="Closing"
-                        value={hospital?.operatingHours[day]?.closing || ''}
+                        value={hospital?.operatingHours[day]?.close || ''}
                         onChange={(e) => setHospital({
                           ...hospital,
-                          operatingHours: { ...hospital.operatingHours, [day]: { ...hospital.operatingHours[day], closing: e.target.value } }
+                          operatingHours: { 
+                            ...hospital.operatingHours, 
+                            [day]: { 
+                              ...hospital.operatingHours[day], 
+                              close: e.target.value 
+                            } 
+                          }
                         })}
                       />
                     </div>
                   </div>
-                ))}
+                )})}
               </div>
             </div>
 

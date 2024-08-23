@@ -27,7 +27,6 @@ export default function Table() {
             <th className="py-3 px-4 border-b text-left">Contact</th>
             <th className="py-3 px-4 border-b text-left">Services</th>
             <th className="py-3 px-4 border-b text-left">Description</th>
-            <th className="py-3 px-4 border-b text-left">Operating Hours</th>
             <th className="py-3 px-4 border-b text-left">Actions</th>
           </tr>
         </thead>
@@ -44,13 +43,13 @@ export default function Table() {
                 {item.services.join(', ')}
               </td>
               <td className="py-3 px-4 border-b text-sm">{item.description}</td>
-              <td className="py-3 px-4 border-b text-sm">
+              {/* <td className="py-3 px-4 border-b text-sm">
                 {Object.entries(item.operatingHours).map(([day, hours]) => (
                   <div key={day}>
                     {day.charAt(0).toUpperCase() + day.slice(1)}: {hours.open} - {hours.close}
                   </div>
                 ))}
-              </td>
+              </td> */}
               <td className="py-3 px-4 border-b text-sm space-x-2">
                 <Link href={`/hospitalform/${item._id}`} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
                   Edit

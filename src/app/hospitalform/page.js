@@ -131,7 +131,7 @@ const HospitalForm = () => {
             {/* Coordinates */}
             <div className="space-y-2">
               <label className="text-gray-700 font-medium">Coordinates</label>
-              <div className="flex space-x-4">
+              <div className="flex space-x-4 flex-wrap">
                 <input
                   className="flex-1 border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   type="number"
@@ -153,7 +153,7 @@ const HospitalForm = () => {
                 {/* Contacts */}
             <div className="space-y-2">
               <label className="text-gray-700 font-medium">Contacts</label>
-              <div className="flex space-x-4">
+              <div className="flex space-x-4 flex-wrap">
                 <div className="flex-1 flex flex-col space-y-1">
                   <label className="text-gray-700">Phone Number</label>
                   <input
@@ -235,13 +235,7 @@ const HospitalForm = () => {
             <div className="space-y-2">
               <div className="flex justify-between">
                 <label className="text-gray-700 font-medium">Services</label>
-                <button
-                  type="button"
-                  className="py-1 rounded-xl text-white bg-blue-500 text-center px-3"
-                  // Implement functionality to add more services if needed
-                >
-                  Add More Services +
-                </button>
+            
               </div>
               <input
                 className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
